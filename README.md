@@ -3,4 +3,4 @@
 Generalize framework for managing script execution.
 
 ## TODO
-- everything
+- variable: check if variable already exists when setting

@@ -3,6 +3,7 @@
 usage() {
     echo "USAGE $(basename $0) [COMMAND]
 COMMANDS:
+    clear
     get
     help
     list
@@ -17,6 +18,10 @@ PROJECTDIR="$(pwd)/$(dirname $0)/.."
 
 # execute command
 case "$1" in
+    clear)
+        rm $VARFILE
+        touch $VARFILE
+        ;;
     get)
         # check argument length
         (( $# != 2 )) && \
