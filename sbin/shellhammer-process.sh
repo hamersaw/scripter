@@ -4,6 +4,7 @@ usage() {
     echo "USAGE $(basename $0) [COMMAND]
 COMMANDS:
     help
+    kill
     list
     show"
 }
@@ -17,6 +18,9 @@ case "$1" in
     help)
         usage
         exit 0
+        ;;
+    kill)
+        echo "TODO - kill"
         ;;
     list)
         echo "TODO - list"

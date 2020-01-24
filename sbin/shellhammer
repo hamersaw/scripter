@@ -4,10 +4,10 @@ usage() {
     echo "USAGE $(basename $0) [COMMAND]
 COMMANDS:
     help
-    init
-    mod
-    proc
-    var"
+    init | initialize
+    mod | module
+    proc | process
+    var | variable"
 }
 
 # initialize variables
@@ -20,19 +20,19 @@ case "$1" in
         usage
         exit 0
         ;;
-    init)
+    init|initialize)
         # create modules and log directories
         [ ! -d $MODDIR ] && mkdir $MODDIR
         [ ! -d $LOGDIR ] && mkdir $LOGDIR
         [ ! -f $VARFILE ] && touch $VARFILE
         ;;
-    mod)
+    mod|module)
         $0-module.sh ${@:2}
         ;;
-    mod)
+    proc|process)
         $0-process.sh ${@:2}
         ;;
-    var)
+    var|variable)
         $0-variable.sh ${@:2}
         ;;
     *)
