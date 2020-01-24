@@ -1,0 +1,42 @@
+#!/bin/bash
+
+usage() {
+    echo "USAGE $(basename $0) [COMMAND]
+COMMANDS:
+    help
+    init
+    mod
+    proc
+    var"
+}
+
+# initialize variables
+PROJECTDIR="$(pwd)/$(dirname $0)/.."
+. $PROJECTDIR/sbin/config.sh
+
+# execute command
+case "$1" in
+    help)
+        usage
+        exit 0
+        ;;
+    init)
+        # create modules and log directories
+        [ ! -d $MODDIR ] && mkdir $MODDIR
+        [ ! -d $LOGDIR ] && mkdir $LOGDIR
+        [ ! -f $VARFILE ] && touch $VARFILE
+        ;;
+    mod)
+        $0-module.sh ${@:2}
+        ;;
+    mod)
+        $0-process.sh ${@:2}
+        ;;
+    var)
+        $0-variable.sh ${@:2}
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac
