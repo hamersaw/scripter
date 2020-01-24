@@ -68,7 +68,6 @@ case "$1" in
             # get next option in list
             OPTION=$(get_json_list "$OPTIONS" "$COUNT")
             if [ $? -eq 0 ]; then
-                echo $OPTION
                 NAME=$(get_json "$OPTION" "name")
                 REQUIRED=$(get_json "$OPTION" "required")
 
@@ -97,11 +96,12 @@ case "$1" in
         BACKGROUND=$(get_json "$JSON" "background")
         case $BACKGROUND in
             true)
-                echo "TODO - execute background modules"
+                # execute in background
+                RANDVAL="$RANDOM"
+                $MODULEFILE "$OPTIONSTRING" >$LOGDIR/$RANDVAL.log 2>&1 &
 
-                # TODO - execute in background
-                #RANDOM="$RANDOM"
-                #$MODULE_FILE "$OPTIONSTRING" > $LOGDIR/$RANDOM.log 2>&1 &
+                echo "$RANDVAL $! $2 $OPTIONSTRING" >> $PROCESSFILE
+                echo "executed as pid $RANDVAL"
                 ;;
             false)
                 $MODULEFILE "$OPTIONSTRING"
