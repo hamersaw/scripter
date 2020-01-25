@@ -3,7 +3,7 @@
 USAGE="USAGE $(basename $0) [COMMAND]
 COMMANDS:
     help                    display this menu
-    list                    list available modules
+    list                    display available modules
     run <module-name>       run the specified module
     show <module-name>      show information on the specified module"
 
@@ -115,7 +115,6 @@ case "$1" in
                 exit 1
                 ;;
         esac
-
         ;;
     show)
         # check argument length

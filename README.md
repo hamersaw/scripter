@@ -1,10 +1,9 @@
 # scripter
 ## OVERVIEW
-Generalize framework for managing script execution.
+Generalized framework for managing script execution.
 
 ## TODO
 - have a single configuration file for each module repository
 - module: remove 'extension' from configuration file
     - should be able to automagically detect it
-- repo: update repositories (use git)
 - process: print off logs

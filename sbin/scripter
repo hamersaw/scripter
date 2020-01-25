@@ -6,6 +6,7 @@ COMMANDS:
     (init | initialize)                 initialize scripter environment
     (mod | module) <SUBCOMMAND>         perform module operations
     (proc | process) <SUBCOMMAND>       perform process operations
+    (repo | repository) <SUBCOMMAND>    perform repository operations
     (var | variable) <SUBCOMMAND>       perform variable operations"
 
 # load project directory and file configurations
@@ -23,6 +24,7 @@ case "$1" in
         [ ! -d $MODDIR ] && mkdir $MODDIR
         [ ! -d $LOGDIR ] && mkdir $LOGDIR
         [ ! -f $PROCFILE ] && touch $PROCFILE
+        [ ! -f $REPOFILE ] && touch $REPOFILE
         [ ! -f $VARFILE ] && touch $VARFILE
         ;;
     mod|module)
@@ -30,6 +32,9 @@ case "$1" in
         ;;
     proc|process)
         $0-process.sh ${@:2}
+        ;;
+    repo|repository)
+        $0-repository.sh ${@:2}
         ;;
     var|variable)
         $0-variable.sh ${@:2}

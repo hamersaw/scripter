@@ -5,7 +5,7 @@ COMMANDS:
     clear                   untrack all current processes
     help                    display this menu
     kill <process-id>       terminate the specified process
-    list                    list all processes
+    list                    display all processes
     show <process-id>       show information on the specified process"
 
 LISTFMT="%-15s%-30s%-20s%-5s\n"

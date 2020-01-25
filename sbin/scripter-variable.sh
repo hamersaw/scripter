@@ -5,7 +5,7 @@ COMMANDS:
     clear                   unset all variables
     get <name>              retrieve the value for a specified variable
     help                    display this menu
-    list                    list all set variables
+    list                    display all set variables
     set <name> <value>      set the value for a specified variable
     unset <name>            unset the value for a specified variable"
 
@@ -43,11 +43,11 @@ case "$1" in
         (( $# != 3 )) && \
             echo "the 'set' command requires two arguments" && exit 1
 
-        # check if variable already exists
+        # check if 'variable' already exists
         cat $VARFILE | grep -q "^$2 " && \
             echo "variable '$2' already exists" && exit 1
 
-        # add 'VARIABLE' and 'VALUE' to VARFILE
+        # add 'variable' and 'value' to VARFILE
         echo "$2 $3" >> $VARFILE
         sort -o $VARFILE $VARFILE
         ;;
@@ -56,7 +56,7 @@ case "$1" in
         (( $# != 2 )) && \
             echo "the 'unset' command requires one argument" && exit 1
 
-        # remove variable from VARFILE
+        # remove 'variable' from VARFILE
         sed -i "/^$3/d" $VARFILE
         ;;
     *)
