@@ -7,7 +7,6 @@ COMMANDS:
     get
     help
     list
-    search
     set
     unset"
 }
@@ -35,35 +34,30 @@ case "$1" in
         exit 0
         ;;
     list)
-        cat $VARFILE | awk '{print $1,":",$2}'
-        ;;
-    search)
-        # check argument length
-        (( $# != 2 )) && \
-            echo "the 'search' command requires one argument" && exit 1
-
-        # retrieve variable value if exists
-        cat $VARFILE | grep "$2" | awk '{print $1,$2}'
+        printf "%-30s%-30s\n" "name" "value"
+        echo "------------------------------------------------------------"
+        cat $VARFILE | awk '{printf "%-30s%-30s\n", $1, $2}'
         ;;
     set)
         # check argument length
         (( $# != 3 )) && \
             echo "the 'set' command requires two arguments" && exit 1
 
-        # add 'KEY' and 'VALUE' to VARFILE
-        mv $VARFILE $VARFILE.tmp
-        { echo "$2 $3"; cat $VARFILE.tmp; } | sort  > $VARFILE
-        rm $VARFILE.tmp
+        # check if variable already exists
+        cat $VARFILE | grep -q "^$2 " && \
+            echo "variable '$2' already exists" && exit 1
+
+        # add 'VARIABLE' and 'VALUE' to VARFILE
+        echo "$2 $3" >> $VARFILE
+        sort -o $VARFILE $VARFILE
         ;;
     unset)
         # check argument length
         (( $# != 2 )) && \
             echo "the 'unset' command requires one argument" && exit 1
 
-        # remove row from VARFILE
-        mv $VARFILE $VARFILE.tmp
-        cat $VARFILE.tmp | sed "/^$2*/d" > $VARFILE
-        rm $VARFILE.tmp
+        # remove variable from VARFILE
+        sed -i "/^$3/d" $VARFILE
         ;;
     *)
         usage

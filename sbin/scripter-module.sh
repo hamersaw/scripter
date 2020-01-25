@@ -30,6 +30,9 @@ case "$1" in
         exit 0
         ;;
     list)
+        printf "%-30s%-60s%-5s\n" "name" "description" "background"
+        echo "----------------------------------------------------------------------------------------------------"
+
         # iterate over script json configuration files
         for CONFIGFILE in $(find $MODDIR -name "*.js"); do
             RELATIVEPATH=${CONFIGFILE/$MODDIR/} # strip MODDIR
@@ -37,16 +40,15 @@ case "$1" in
                 /*)
                     # strip leading /
                     RELATIVEPATH="${RELATIVEPATH:1:${#RELATIVEPATH}-1}"
-                    NAME="${RELATIVEPATH%.*}" # strip file extension
-                    ;;
-                *)
-                    NAME="${RELATIVEPATH%.*}" # strip file extension
                     ;;
             esac
+            NAME="${RELATIVEPATH%.*}" # strip file extension
 
-            DESCRIPTION=$(get_json $CONFIGFILE "description")
+            JSON=$(cat $CONFIGFILE)
+            DESCRIPTION=$(get_json "$JSON" "description")
+            BACKGROUND=$(get_json "$JSON" "background")
 
-            echo "$NAME : $DESCRIPTION"
+            printf "%-30s%-60s%-5s\n" "$NAME" "$DESCRIPTION" "$BACKGROUND"
         done
         ;;
     run)
@@ -97,11 +99,12 @@ case "$1" in
         case $BACKGROUND in
             true)
                 # execute in background
-                RANDVAL="$RANDOM"
-                $MODULEFILE "$OPTIONSTRING" >$LOGDIR/$RANDVAL.log 2>&1 &
+                PID="$RANDOM"
+                $MODULEFILE "$OPTIONSTRING" >$LOGDIR/$PID.log 2>&1 &
 
-                echo "$RANDVAL $! $2 $OPTIONSTRING" >> $PROCESSFILE
-                echo "executed as pid $RANDVAL"
+                echo "$PID $! $(date +%Y.%m.%d-%H:%M) \
+                    $2 $OPTIONSTRING" >> $PROCESSFILE
+                echo "executed as pid $PID"
                 ;;
             false)
                 $MODULEFILE "$OPTIONSTRING"
