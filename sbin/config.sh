@@ -2,5 +2,5 @@ PROJECTDIR="$(pwd)/$(dirname $0)/.."
 
 LOGDIR="$PROJECTDIR/.log"
 MODDIR="$PROJECTDIR/.modules"
-PROCESSFILE="$PROJECTDIR/.processfile"
+PROCFILE="$PROJECTDIR/.procfile"
 VARFILE="$PROJECTDIR/.varfile"

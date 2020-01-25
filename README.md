@@ -6,6 +6,5 @@ Generalize framework for managing script execution.
 - have a single configuration file for each module repository
 - module: remove 'extension' from configuration file
     - should be able to automagically detect it
-- module: update repositories (use git)
+- repo: update repositories (use git)
 - process: print off logs
-- variable: check if variable already exists when setting

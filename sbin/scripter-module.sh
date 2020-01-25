@@ -1,13 +1,14 @@
 #!/bin/bash
 
-usage() {
-    echo "USAGE $(basename $0) [COMMAND]
+USAGE="USAGE $(basename $0) [COMMAND]
 COMMANDS:
-    help
-    list
-    run
-    show"
-}
+    help                    display this menu
+    list                    list available modules
+    run <module-name>       run the specified module
+    show <module-name>      show information on the specified module"
+
+LISTFMT="%-30s%-60s%-5s\n"
+LISTDIVLEN=100
 
 get_json() {
     echo ${1//\'/\"} | python3 -c "import sys, json; \
@@ -19,19 +20,19 @@ get_json_list() {
         print(json.load(sys.stdin)[$2])" 2>/dev/null
 }
 
-# initialize variables
+# load project directory and file configurations
 PROJECTDIR="$(pwd)/$(dirname $0)/.."
 . $PROJECTDIR/sbin/config.sh
 
 # execute command
 case "$1" in
     help)
-        usage
+        printf "$USAGE\n"
         exit 0
         ;;
     list)
-        printf "%-30s%-60s%-5s\n" "name" "description" "background"
-        echo "----------------------------------------------------------------------------------------------------"
+        printf "$LISTFMT" "name" "description" "background"
+        printf "%.0s-" $(seq 1 $LISTDIVLEN); printf "\n"
 
         # iterate over script json configuration files
         for CONFIGFILE in $(find $MODDIR -name "*.js"); do
@@ -48,7 +49,7 @@ case "$1" in
             DESCRIPTION=$(get_json "$JSON" "description")
             BACKGROUND=$(get_json "$JSON" "background")
 
-            printf "%-30s%-60s%-5s\n" "$NAME" "$DESCRIPTION" "$BACKGROUND"
+            printf "$LISTFMT" "$NAME" "$DESCRIPTION" "$BACKGROUND"
         done
         ;;
     run)
@@ -103,7 +104,7 @@ case "$1" in
                 $MODULEFILE "$OPTIONSTRING" >$LOGDIR/$PID.log 2>&1 &
 
                 echo "$PID $! $(date +%Y.%m.%d-%H:%M) \
-                    $2 $OPTIONSTRING" >> $PROCESSFILE
+                    $2 $OPTIONSTRING" >> $PROCFILE
                 echo "executed as pid $PID"
                 ;;
             false)
@@ -128,7 +129,7 @@ case "$1" in
         cat $CONFIGFILE
         ;;
     *)
-        usage
+        printf "$USAGE\n"
         exit 1
         ;;
 esac

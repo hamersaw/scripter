@@ -1,15 +1,17 @@
 #!/bin/bash
 
-usage() {
-    echo "USAGE $(basename $0) [COMMAND]
+USAGE="USAGE $(basename $0) [COMMAND]
 COMMANDS:
-    help
-    kill
-    list
-    show"
-}
+    clear                   untrack all current processes
+    help                    display this menu
+    kill <process-id>       terminate the specified process
+    list                    list all processes
+    show <process-id>       show information on the specified process"
 
-# initialize variables
+LISTFMT="%-15s%-30s%-20s%-5s\n"
+LISTDIVLEN=72
+
+# load project directory and file configurations
 PROJECTDIR="$(pwd)/$(dirname $0)/.."
 . $PROJECTDIR/sbin/config.sh
 
@@ -23,8 +25,12 @@ is_pid_running() {
 
 # execute command
 case "$1" in
+    clear)
+        cat /dev/null > $PROCFILE
+        rm $LOGDIR/*
+        ;;
     help)
-        usage
+        printf "$USAGE\n"
         exit 0
         ;;
     kill)
@@ -33,22 +39,22 @@ case "$1" in
             echo "the 'kill' command requires one argument" && exit 1
 
         # kill process
-        cat $PROCESSFILE | grep "^$2 " | awk '{print $2}' | xargs kill
+        cat $PROCFILE | grep "^$2 " | awk '{print $2}' | xargs kill
         ;;
     list)
-        printf "%-15s%-30s%-20s%-5s\n" "pid" "name" "timestamp" "running"
-        echo "------------------------------------------------------------------------"
+        printf "$LISTFMT" "pid" "name" "timestamp" "running"
+        printf "%.0s-" $(seq 1 $LISTDIVLEN); printf "\n"
 
-        # iterate over PROCESSFILE
+        # iterate over PROCFILE
         while read LINE; do
             ARRAY=($LINE)
             RUNNING=$(is_pid_running ${ARRAY[1]})
-            printf "%-15s%-30s%-20s%-5s\n" "${ARRAY[0]}" \
+            printf "$LISTFMT" "${ARRAY[0]}" \
                 "${ARRAY[3]}" "${ARRAY[2]}" "$RUNNING"
-        done < $PROCESSFILE
+        done < $PROCFILE
         ;;
     show)
-        LINE=$(cat $PROCESSFILE | grep "^$2 ")
+        LINE=$(cat $PROCFILE | grep "^$2 ")
         if [ ! -z "$LINE" ]; then
             ARRAY=($LINE)
             RUNNING=$(is_pid_running ${ARRAY[1]})
@@ -64,7 +70,7 @@ case "$1" in
         fi
         ;;
     *)
-        usage
+        printf "$USAGE\n"
         exit 1
         ;;
 esac

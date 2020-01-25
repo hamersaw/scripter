@@ -1,29 +1,28 @@
 #!/bin/bash
 
-usage() {
-    echo "USAGE $(basename $0) [COMMAND]
+USAGE="USAGE $(basename $0) [COMMAND]
 COMMANDS:
-    help
-    init | initialize
-    mod | module
-    proc | process
-    var | variable"
-}
+    help                                display this menu
+    (init | initialize)                 initialize scripter environment
+    (mod | module) <SUBCOMMAND>         perform module operations
+    (proc | process) <SUBCOMMAND>       perform process operations
+    (var | variable) <SUBCOMMAND>       perform variable operations"
 
-# initialize variables
+# load project directory and file configurations
 PROJECTDIR="$(pwd)/$(dirname $0)/.."
 . $PROJECTDIR/sbin/config.sh
 
 # execute command
 case "$1" in
     help)
-        usage
+        printf "$USAGE\n"
         exit 0
         ;;
     init|initialize)
         # create modules and log directories
         [ ! -d $MODDIR ] && mkdir $MODDIR
         [ ! -d $LOGDIR ] && mkdir $LOGDIR
+        [ ! -f $PROCFILE ] && touch $PROCFILE
         [ ! -f $VARFILE ] && touch $VARFILE
         ;;
     mod|module)
@@ -36,7 +35,7 @@ case "$1" in
         $0-variable.sh ${@:2}
         ;;
     *)
-        usage
+        printf "$USAGE\n"
         exit 1
         ;;
 esac

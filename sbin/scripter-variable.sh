@@ -1,25 +1,25 @@
 #!/bin/bash
 
-usage() {
-    echo "USAGE $(basename $0) [COMMAND]
+USAGE="USAGE $(basename $0) [COMMAND]
 COMMANDS:
-    clear
-    get
-    help
-    list
-    set
-    unset"
-}
+    clear                   unset all variables
+    get <name>              retrieve the value for a specified variable
+    help                    display this menu
+    list                    list all set variables
+    set <name> <value>      set the value for a specified variable
+    unset <name>            unset the value for a specified variable"
 
-# initialize variables
+LISTFMT="%-30s%-30s\n"
+LISTDIVLEN=60
+
+# load project directory and file configurations
 PROJECTDIR="$(pwd)/$(dirname $0)/.."
 . $PROJECTDIR/sbin/config.sh
 
 # execute command
 case "$1" in
     clear)
-        rm $VARFILE
-        touch $VARFILE
+        cat /dev/null > $VARFILE
         ;;
     get)
         # check argument length
@@ -30,13 +30,13 @@ case "$1" in
         cat $VARFILE | grep "^$2 " | awk '{print $2}'
         ;;
     help)
-        usage
+        printf "$USAGE\n"
         exit 0
         ;;
     list)
-        printf "%-30s%-30s\n" "name" "value"
-        echo "------------------------------------------------------------"
-        cat $VARFILE | awk '{printf "%-30s%-30s\n", $1, $2}'
+        printf "$LISTFMT" "name" "value"
+        printf "%.0s-" $(seq 1 $LISTDIVLEN); printf "\n"
+        cat $VARFILE | awk -v fmt="$LISTFMT" '{printf fmt, $1, $2}'
         ;;
     set)
         # check argument length
@@ -60,7 +60,7 @@ case "$1" in
         sed -i "/^$3/d" $VARFILE
         ;;
     *)
-        usage
+        printf "$USAGE\n"
         exit 1
         ;;
 esac
