@@ -59,14 +59,7 @@ case "$1" in
             ARRAY=($LINE)
             RUNNING=$(is_pid_running ${ARRAY[1]})
 
-            echo "{
-    \"pid\" : \"${ARRAY[0]}\"
-    \"ospid\" : \"${ARRAY[1]}\"
-    \"name\" : \"${ARRAY[3]}\"
-    \"timestamp\" : \"${ARRAY[2]}\"
-    \"running\" : \"$RUNNING\"
-    \"options\" : \"${ARRAY[4]}\"
-}"
+            echo "{ \"pid\" : \"${ARRAY[0]}\", \"ospid\" : \"${ARRAY[1]}\", \"name\" : \"${ARRAY[3]}\", \"timestamp\" : \"${ARRAY[2]}\", \"running\" : \"$RUNNING\", \"options\" : \"${ARRAY[4]}\" }"
         fi
         ;;
     *)

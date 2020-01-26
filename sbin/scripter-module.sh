@@ -12,7 +12,12 @@ LISTDIVLEN=100
 
 get_json() {
     echo ${1//\'/\"} | python3 -c "import sys, json; \
-        print(json.load(sys.stdin)['$2'])"
+        print(json.load(sys.stdin)['$2'])" 2>/dev/null
+}
+
+get_json_keys() {
+    echo ${1//\'/\"} | python3 -c "import sys, json; \
+        print(*json.load(sys.stdin).keys())"
 }
 
 get_json_list() {
@@ -34,22 +39,26 @@ case "$1" in
         printf "$LISTFMT" "name" "description" "background"
         printf "%.0s-" $(seq 1 $LISTDIVLEN); printf "\n"
 
-        # iterate over script json configuration files
-        for CONFIGFILE in $(find $MODDIR -name "*.js"); do
-            RELATIVEPATH=${CONFIGFILE/$MODDIR/} # strip MODDIR
-            case $RELATIVEPATH in
-                /*)
-                    # strip leading /
-                    RELATIVEPATH="${RELATIVEPATH:1:${#RELATIVEPATH}-1}"
-                    ;;
-            esac
-            NAME="${RELATIVEPATH%.*}" # strip file extension
-
+        for CONFIGFILE in $(ls $MODDIR/*/config.js); do
+            # retrieve modules list for this repository
             JSON=$(cat $CONFIGFILE)
-            DESCRIPTION=$(get_json "$JSON" "description")
-            BACKGROUND=$(get_json "$JSON" "background")
+            KEYS=$(get_json_keys "$JSON")
+            MODULES=($KEYS)
 
-            printf "$LISTFMT" "$NAME" "$DESCRIPTION" "$BACKGROUND"
+            # compute repository name
+            REPONAME=${CONFIGFILE/$MODDIR/} # strip MODDIR
+            REPONAME=${REPONAME/config.js/} # strip 'config.js'
+            REPONAME="${REPONAME:1:${#REPONAME}-2}" # strip /'s
+
+            # iterate over modules
+            for MODULE in ${MODULES[@]}; do
+                MODULEJSON=$(get_json "$JSON" "$MODULE")
+                DESCRIPTION=$(get_json "$MODULEJSON" "description")
+                BACKGROUND=$(get_json "$MODULEJSON" "background")
+
+                printf "$LISTFMT" "$REPONAME/$MODULE" \
+                    "$DESCRIPTION" "$BACKGROUND"
+            done
         done
         ;;
     run)
@@ -57,14 +66,18 @@ case "$1" in
         (( $# != 2 )) && \
             echo "the 'run' command requires one argument" && exit 1
 
+        # compute REPONAME and SCRIPTNAME
+        REPONAME=$(echo "$2" | cut -f 1 -d "/")
+        SCRIPTNAME=${2/$REPONAME/} # strip REPONAME
+        SCRIPTNAME="${SCRIPTNAME:1:${#SCRIPTNAME}-1}" # strip leading /
+
         # check if module exists
-        CONFIGFILE="$MODDIR/$2.js"
-        [ ! -f $CONFIGFILE ] && echo "module '$2' does not exist" && exit 1
+        JSON=$(cat $MODDIR/$REPONAME/config.js)
+        MODULEJSON=$(get_json "$JSON" "$SCRIPTNAME")
+        [ -z "$MODULEJSON" ] && echo "module '$2' does not exist" && exit 1
 
         # populate options 
-        JSON=$(cat $CONFIGFILE)
-        OPTIONS=$(get_json "$JSON" "options")
-        
+        OPTIONS=$(get_json "$MODULEJSON" "options")
         COUNT=0
         OPTIONSTRING=""
         for (( ; ; )); do
@@ -93,10 +106,8 @@ case "$1" in
         done
 
         # execute module
-        EXTENSION=$(get_json "$JSON" "extension")
-        MODULEFILE="$MODDIR/$2.$EXTENSION"
-
-        BACKGROUND=$(get_json "$JSON" "background")
+        MODULEFILE="$MODDIR/$2"
+        BACKGROUND=$(get_json "$MODULEJSON" "background")
         case $BACKGROUND in
             true)
                 # execute in background
@@ -121,11 +132,18 @@ case "$1" in
         (( $# != 2 )) && \
             echo "the 'show' command requires one argument" && exit 1
 
-        # check if module exists
-        CONFIGFILE="$MODDIR/$2.js"
-        [ ! -f $CONFIGFILE ] && echo "module '$2' does not exist" && exit 1
+        # compute REPONAME and SCRIPTNAME
+        REPONAME=$(echo "$2" | cut -f 1 -d "/")
+        SCRIPTNAME=${2/$REPONAME/} # strip REPONAME
+        SCRIPTNAME="${SCRIPTNAME:1:${#SCRIPTNAME}-1}" # strip leading /
 
-        cat $CONFIGFILE
+        # check if module exists
+        JSON=$(cat $MODDIR/$REPONAME/config.js)
+        MODULEJSON=$(get_json "$JSON" "$SCRIPTNAME")
+        [ -z "$MODULEJSON" ] && echo "module '$2' does not exist" && exit 1
+
+        # print module
+        echo ${MODULEJSON//\'/\"}
         ;;
     *)
         printf "$USAGE\n"
