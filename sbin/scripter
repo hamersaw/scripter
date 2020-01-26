@@ -1,31 +1,31 @@
 #!/bin/bash
 
-USAGE="USAGE $(basename $0) [COMMAND]
+usage="usage $(basename $0) [COMMAND]
 COMMANDS:
     help                                display this menu
-    (init | initialize)                 initialize scripter environment
+    (init | initialize)                 initialize environment
     (mod | module) <SUBCOMMAND>         perform module operations
     (proc | process) <SUBCOMMAND>       perform process operations
     (repo | repository) <SUBCOMMAND>    perform repository operations
     (var | variable) <SUBCOMMAND>       perform variable operations"
 
 # load project directory and file configurations
-PROJECTDIR="$(pwd)/$(dirname $0)/.."
-. $PROJECTDIR/sbin/config.sh
+projectdir="$(pwd)/$(dirname $0)/.."
+. $projectdir/sbin/config.sh
 
 # execute command
 case "$1" in
     help)
-        printf "$USAGE\n"
+        printf "$usage\n"
         exit 0
         ;;
     init|initialize)
         # create modules and log directories
-        [ ! -d $MODDIR ] && mkdir $MODDIR
-        [ ! -d $LOGDIR ] && mkdir $LOGDIR
-        [ ! -f $PROCFILE ] && touch $PROCFILE
-        [ ! -f $REPOFILE ] && touch $REPOFILE
-        [ ! -f $VARFILE ] && touch $VARFILE
+        [ ! -d $moddir ] && mkdir $moddir
+        [ ! -d $logdir ] && mkdir $logdir
+        [ ! -f $procfile ] && touch $procfile
+        [ ! -f $repofile ] && touch $repofile
+        [ ! -f $varfile ] && touch $varfile
         ;;
     mod|module)
         $0-module.sh ${@:2}
@@ -40,7 +40,7 @@ case "$1" in
         $0-variable.sh ${@:2}
         ;;
     *)
-        printf "$USAGE\n"
+        printf "$usage\n"
         exit 1
         ;;
 esac

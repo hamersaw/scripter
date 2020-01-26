@@ -1,6 +1,6 @@
 #!/bin/bash
 
-USAGE="USAGE $(basename $0) [COMMAND]
+usage="usage $(basename $0) [COMMAND]
 COMMANDS:
     clear                   unset all variables
     get <name>              retrieve the value for a specified variable
@@ -9,17 +9,17 @@ COMMANDS:
     set <name> <value>      set the value for a specified variable
     unset <name>            unset the value for a specified variable"
 
-LISTFMT="%-30s%-30s\n"
-LISTDIVLEN=60
+listfmt="%-30s%-30s\n"
+listdivlen=60
 
 # load project directory and file configurations
-PROJECTDIR="$(pwd)/$(dirname $0)/.."
-. $PROJECTDIR/sbin/config.sh
+projectdir="$(pwd)/$(dirname $0)/.."
+. $projectdir/sbin/config.sh
 
 # execute command
 case "$1" in
     clear)
-        cat /dev/null > $VARFILE
+        cat /dev/null > $varfile
         ;;
     get)
         # check argument length
@@ -27,16 +27,16 @@ case "$1" in
             echo "the 'get' command requires one argument" && exit 1
 
         # retrieve variable value if exists
-        cat $VARFILE | grep "^$2 " | awk '{print $2}'
+        cat $varfile | grep "^$2 " | awk '{print $2}'
         ;;
     help)
-        printf "$USAGE\n"
+        printf "$usage\n"
         exit 0
         ;;
     list)
-        printf "$LISTFMT" "name" "value"
-        printf "%.0s-" $(seq 1 $LISTDIVLEN); printf "\n"
-        cat $VARFILE | awk -v fmt="$LISTFMT" '{printf fmt, $1, $2}'
+        printf "$listfmt" "name" "value"
+        printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
+        cat $varfile | awk -v fmt="$listfmt" '{printf fmt, $1, $2}'
         ;;
     set)
         # check argument length
@@ -44,23 +44,23 @@ case "$1" in
             echo "the 'set' command requires two arguments" && exit 1
 
         # check if 'variable' already exists
-        cat $VARFILE | grep -q "^$2 " && \
+        cat $varfile | grep -q "^$2 " && \
             echo "variable '$2' already exists" && exit 1
 
-        # add 'variable' and 'value' to VARFILE
-        echo "$2 $3" >> $VARFILE
-        sort -o $VARFILE $VARFILE
+        # add 'variable' and 'value' to varfile
+        echo "$2 $3" >> $varfile
+        sort -o $varfile $varfile
         ;;
     unset)
         # check argument length
         (( $# != 2 )) && \
             echo "the 'unset' command requires one argument" && exit 1
 
-        # remove 'variable' from VARFILE
-        sed -i "/^$3/d" $VARFILE
+        # remove 'variable' from varfile
+        sed -i "/^$3/d" $varfile
         ;;
     *)
-        printf "$USAGE\n"
+        printf "$usage\n"
         exit 1
         ;;
 esac

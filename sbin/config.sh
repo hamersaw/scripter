@@ -1,7 +1,7 @@
-PROJECTDIR="$(pwd)/$(dirname $0)/.."
+projectdir="$(pwd)/$(dirname $0)/.."
 
-LOGDIR="$PROJECTDIR/.log"
-MODDIR="$PROJECTDIR/.modules"
-PROCFILE="$PROJECTDIR/.procfile"
-REPOFILE="$PROJECTDIR/.repofile"
-VARFILE="$PROJECTDIR/.varfile"
+logdir="$projectdir/.log"
+moddir="$projectdir/.modules"
+procfile="$projectdir/.procfile"
+repofile="$projectdir/.repofile"
+varfile="$projectdir/.varfile"

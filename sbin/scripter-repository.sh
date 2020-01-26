@@ -1,6 +1,6 @@
 #!/bin/bash
 
-USAGE="USAGE $(basename $0) [COMMAND]
+usage="usage $(basename $0) [COMMAND]
 COMMANDS:
     add <name> <git-url>    add the specified repository with git url
     clear                   clear the list of registered repositories
@@ -9,12 +9,12 @@ COMMANDS:
     remove <name>           reomte the specified repository
     update                  update modules by syncing repositories"
 
-LISTFMT="%-10s%-30s\n"
-LISTDIVLEN=50
+listfmt="%-15s%-35s\n"
+listdivlen=60
 
 # load project directory and file configurations
-PROJECTDIR="$(pwd)/$(dirname $0)/.."
-. $PROJECTDIR/sbin/config.sh
+projectdir="$(pwd)/$(dirname $0)/.."
+. $projectdir/sbin/config.sh
 
 # execute command
 case "$1" in
@@ -24,53 +24,53 @@ case "$1" in
             echo "the 'add' command requires one argument" && exit 1
 
         # check if 'name' already exists
-        cat $REPOFILE | grep -q "^$2 " && \
+        cat $repofile | grep -q "^$2 " && \
             echo "repository '$2' already exists" && exit 1
 
-        # add 'name' and 'url' to REPOFILE
-        echo "$2 $3" >> $REPOFILE
-        sort -o $REPOFILE $REPOFILE
+        # add 'name' and 'url' to repofile
+        echo "$2 $3" >> $repofile
+        sort -o $repofile $repofile
         ;;
     clear)
-        cat /dev/null > $REPOFILE
+        cat /dev/null > $repofile
         ;;
     help)
-        printf "$USAGE\n"
+        printf "$usage\n"
         exit 0
         ;;
     list)
-        printf "$LISTFMT" "name" "url"
-        printf "%.0s-" $(seq 1 $LISTDIVLEN); printf "\n"
-        cat $REPOFILE | awk -v fmt="$LISTFMT" '{printf fmt, $1, $2}'
+        printf "$listfmt" "name" "url"
+        printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
+        cat $repofile | awk -v fmt="$listfmt" '{printf fmt, $1, $2}'
         ;;
     remove)
         # check argument length
         (( $# != 2 )) && \
             echo "the 'remove' command requires one argument" && exit 1
 
-        # remove 'name' from REPOFILE
-        sed -i "/^$3/d" $REPOFILE
+        # remove 'name' from repofile
+        sed -i "/^$3/d" $repofile
         ;;
     update)
-        # iterate over REPOFILE
+        # iterate over repofile
         while read LINE; do
-            ARRAY=($LINE)
-            REPODIR="$MODDIR/${ARRAY[0]}"
+            array=($LINE)
+            repodir="$moddir/${array[0]}"
 
-            if [ -d "$REPODIR" ]; then
+            if [ -d "$repodir" ]; then
                 # repo exists -> git pull
                 PWD=$(pwd)
-                cd "$REPODIR"
+                cd "$repodir"
                 git pull > /dev/null
                 cd "$PWD"
             else
                 # repo does not exist -> git clone
-                git clone "${ARRAY[1]}" "$REPODIR" > /dev/null
+                git clone "${array[1]}" "$repodir" > /dev/null
             fi
-        done < $REPOFILE
+        done < $repofile
         ;;
     *)
-        printf "$USAGE\n"
+        printf "$usage\n"
         exit 1
         ;;
 esac

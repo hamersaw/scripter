@@ -1,6 +1,6 @@
 #!/bin/bash
 
-USAGE="USAGE $(basename $0) [COMMAND]
+usage="usage $(basename $0) [COMMAND]
 COMMANDS:
     clear                   untrack all current processes
     help                    display this menu
@@ -8,12 +8,12 @@ COMMANDS:
     list                    display all processes
     show <process-id>       show information on the specified process"
 
-LISTFMT="%-15s%-30s%-20s%-5s\n"
-LISTDIVLEN=72
+listfmt="%-15s%-30s%-23s%-5s\n"
+listdivlen=75
 
 # load project directory and file configurations
-PROJECTDIR="$(pwd)/$(dirname $0)/.."
-. $PROJECTDIR/sbin/config.sh
+projectdir="$(pwd)/$(dirname $0)/.."
+. $projectdir/sbin/config.sh
 
 is_pid_running() {
     if ps -p $1 > /dev/null; then
@@ -26,11 +26,11 @@ is_pid_running() {
 # execute command
 case "$1" in
     clear)
-        cat /dev/null > $PROCFILE
-        rm $LOGDIR/*
+        cat /dev/null > $procfile
+        rm $logdir/*
         ;;
     help)
-        printf "$USAGE\n"
+        printf "$usage\n"
         exit 0
         ;;
     kill)
@@ -39,31 +39,31 @@ case "$1" in
             echo "the 'kill' command requires one argument" && exit 1
 
         # kill process
-        cat $PROCFILE | grep "^$2 " | awk '{print $2}' | xargs kill
+        cat $procfile | grep "^$2 " | awk '{print $2}' | xargs kill
         ;;
     list)
-        printf "$LISTFMT" "pid" "name" "timestamp" "running"
-        printf "%.0s-" $(seq 1 $LISTDIVLEN); printf "\n"
+        printf "$listfmt" "pid" "name" "timestamp" "running"
+        printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
 
-        # iterate over PROCFILE
+        # iterate over procfile
         while read LINE; do
-            ARRAY=($LINE)
-            RUNNING=$(is_pid_running ${ARRAY[1]})
-            printf "$LISTFMT" "${ARRAY[0]}" \
-                "${ARRAY[3]}" "${ARRAY[2]}" "$RUNNING"
-        done < $PROCFILE
+            array=($LINE)
+            running=$(is_pid_running ${array[1]})
+            printf "$listfmt" "${array[0]}" \
+                "${array[3]}" "${array[2]}" "$running"
+        done < $procfile
         ;;
     show)
-        LINE=$(cat $PROCFILE | grep "^$2 ")
+        LINE=$(cat $procfile | grep "^$2 ")
         if [ ! -z "$LINE" ]; then
-            ARRAY=($LINE)
-            RUNNING=$(is_pid_running ${ARRAY[1]})
+            array=($LINE)
+            running=$(is_pid_running ${array[1]})
 
-            echo "{ \"pid\" : \"${ARRAY[0]}\", \"ospid\" : \"${ARRAY[1]}\", \"name\" : \"${ARRAY[3]}\", \"timestamp\" : \"${ARRAY[2]}\", \"running\" : \"$RUNNING\", \"options\" : \"${ARRAY[4]}\" }"
+            echo "{ \"pid\" : \"${array[0]}\", \"ospid\" : \"${array[1]}\", \"name\" : \"${array[3]}\", \"timestamp\" : \"${array[2]}\", \"running\" : \"$running\", \"options\" : ${array[4]} }"
         fi
         ;;
     *)
-        printf "$USAGE\n"
+        printf "$usage\n"
         exit 1
         ;;
 esac
