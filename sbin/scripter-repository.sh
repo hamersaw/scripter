@@ -36,7 +36,6 @@ case "$1" in
         ;;
     help)
         printf "$usage\n"
-        exit 0
         ;;
     list)
         printf "$listfmt" "name" "url"

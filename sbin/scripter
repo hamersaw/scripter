@@ -7,7 +7,10 @@ COMMANDS:
     (mod | module) <SUBCOMMAND>         perform module operations
     (proc | process) <SUBCOMMAND>       perform process operations
     (repo | repository) <SUBCOMMAND>    perform repository operations
-    (var | variable) <SUBCOMMAND>       perform variable operations"
+    (var | variable) <SUBCOMMAND>       perform variable operations
+    version                             print application version"
+
+version="0.1.0"
 
 # load project directory and file configurations
 projectdir="$(pwd)/$(dirname $0)/.."
@@ -17,7 +20,6 @@ projectdir="$(pwd)/$(dirname $0)/.."
 case "$1" in
     help)
         printf "$usage\n"
-        exit 0
         ;;
     init|initialize)
         # create modules and log directories
@@ -38,6 +40,9 @@ case "$1" in
         ;;
     var|variable)
         $0-variable.sh ${@:2}
+        ;;
+    version)
+        echo "$version"
         ;;
     *)
         printf "$usage\n"

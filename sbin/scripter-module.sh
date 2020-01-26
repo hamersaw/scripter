@@ -33,7 +33,6 @@ projectdir="$(pwd)/$(dirname $0)/.."
 case "$1" in
     help)
         printf "$usage\n"
-        exit 0
         ;;
     list)
         printf "$listfmt" "name" "description" "background"
