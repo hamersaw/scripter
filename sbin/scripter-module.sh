@@ -5,9 +5,10 @@ COMMANDS:
     help                    display this menu
     list                    display available modules
     run <module-name>       run the specified module
+    run-bg <module-name>    run the specified module in the background
     show <module-name>      show information on the specified module"
 
-listfmt="%-30s%-50s%-5s\n"
+listfmt="%-35s%-50s\n"
 listdivlen=90
 
 get_json() {
@@ -35,7 +36,7 @@ case "$1" in
         printf "$usage\n"
         ;;
     list)
-        printf "$listfmt" "name" "description" "background"
+        printf "$listfmt" "name" "description"
         printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
 
         for configfile in $(ls $moddir/*/config.js); do
@@ -53,10 +54,8 @@ case "$1" in
             for module in ${modules[@]}; do
                 modulejson=$(get_json "$json" "$module")
                 description=$(get_json "$modulejson" "description")
-                background=$(get_json "$modulejson" "background")
 
-                printf "$listfmt" "$reponame/$module" \
-                    "$description" "$background"
+                printf "$listfmt" "$reponame/$module" "$description"
             done
         done
         ;;
@@ -64,6 +63,17 @@ case "$1" in
         # check argument length
         (( $# != 2 )) && \
             echo "the 'run' command requires one argument" && exit 1
+
+        # set foreground to true
+        foreground="true"
+        ;&
+    run-bg)
+        # check argument length
+        (( $# != 2 )) && \
+            echo "the 'run' command requires one argument" && exit 1
+
+        # if unset -> set foreground to false
+        [ -z "$foreground" ] && foreground="false"
 
         # compute reponame and scriptname
         reponame=$(echo "$2" | cut -f 1 -d "/")
@@ -106,23 +116,18 @@ case "$1" in
 
         # execute module
         modulefile="$moddir/$2"
-        background=$(get_json "$modulejson" "background")
-        case $background in
+        case $foreground in
             true)
+                $modulefile "$optionstring"
+                ;;
+            false)
                 # execute in background
                 pid="$RANDOM"
                 $modulefile "$optionstring" >$logdir/$pid.log 2>&1 &
 
-                echo "$pid $! $(date +%Y.%m.%d-%H:%M:%S) \
-                    $2 \"$optionstring\"" >> $procfile
-                echo "executed as pid $pid"
-                ;;
-            false)
-                $modulefile "$optionstring"
-                ;;
-            *)
-                echo "module 'background' must be set to 'true' or 'false'"
-                exit 1
+                echo "$pid $! $(date +%Y.%m.%d-%H:%M:%S) $2 \"$optionstring\"" \
+                    >> $procfile
+                echo "executed process with pid $pid"
                 ;;
         esac
         ;;

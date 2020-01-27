@@ -1,5 +1,6 @@
 #!/bin/bash
 
+version="0.1.0"
 usage="usage $(basename $0) [COMMAND]
 COMMANDS:
     help                                display this menu
@@ -9,8 +10,6 @@ COMMANDS:
     (repo | repository) <SUBCOMMAND>    perform repository operations
     (var | variable) <SUBCOMMAND>       perform variable operations
     version                             print application version"
-
-version="0.1.0"
 
 # load project directory and file configurations
 projectdir="$(pwd)/$(dirname $0)/.."
