@@ -56,7 +56,7 @@ case "$1" in
             echo "the 'unset' command requires one argument" && exit 1
 
         # remove 'variable' from varfile
-        sed -i "/^$3/d" $varfile
+        sed -i "/^$2/d" $varfile
         ;;
     *)
         printf "$usage\n"
