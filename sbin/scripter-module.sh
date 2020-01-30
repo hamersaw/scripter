@@ -102,7 +102,7 @@ case "$1" in
                     echo "required variable '$name' is not set" && exit 1
 
                 # append to optionstring
-                if [ -z $optionstring ]; then
+                if [ -z "$optionstring" ]; then
                     optionstring="$name=$value"
                 else
                     optionstring="$optionstring $name=$value"
