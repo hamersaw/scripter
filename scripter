@@ -86,6 +86,10 @@ procfile="$scripterdir/procfile"
 repofile="$scripterdir/repofile"
 varfile="$scripterdir/varfile"
 
+# set environment variables for scripter libraries
+projectdir="$(pwd)/$(dirname $0)"
+export scripterlibsh="$projectdir/scripter-libsh.sh"
+
 # execute command
 case "$1" in
     help)
@@ -169,7 +173,7 @@ case "$1" in
                         required=$(get_json "$option" "required")
 
                         # retrieve value from variable store
-                        value=$($0 get $name)
+                        value=$($0 var get $name)
                         [ -z $value ] && [ $required = "true" ] && \
                             echo "required variable '$name' is not set" && exit 1
 
