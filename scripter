@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="0.1.3"
+version="0.2.0"
 usage="usage $(basename $0) <COMMAND> [SUBCOMMAND] [ARGS...]
 COMMANDS:
     help                                display this menu
