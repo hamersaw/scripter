@@ -33,6 +33,7 @@ parse_module() {
 
 parse_module_config() {
     module_option_names=()
+    module_option_flags=()
     module_option_required=()
 
     option_count=$(echo "$1" | jq '.options | length')
@@ -41,6 +42,8 @@ parse_module_config() {
 
         local name=$(echo $option_config | jq '.name')
         module_option_names+=( $(echo "$name" | sed 's/\"//g') )
+        local flag=$(echo $option_config | jq '.flag')
+        module_option_flags+=( $(echo "$flag" | sed 's/\"//g') )
         local required=$(echo $option_config | jq '.required')
         module_option_required+=( $(echo "$required" | sed 's/\"//g') )
     done
@@ -94,16 +97,22 @@ case "$1" in
         for (( i=0; i<${#module_option_names[@]}; i++ )); do
             # retrieve variable
             value=$($scriptdir/variable.sh get ${module_option_names[$i]})
-            [ -z $value ] && \
-                [ "${module_option_required[$i]}" = "true" ] && \
-                echo "required variable '${module_option_names[$i]}' is not set" \
-                && exit 1
+
+            # check if variable is set and required
+            if [ -z "$value" ]; then
+                if [ "${module_option_required[$i]}" = "true" ]; then
+                    echo "required variable '${module_option_names[$i]}' is not set"
+                    exit 1
+                else
+                    continue;
+                fi
+            fi
 
             # append to optionstring
             if [ -z "$optionstring" ]; then
-                optionstring="${module_option_names[$i]}=$value"
+                optionstring="-${module_option_flags[$i]} $value"
             else
-                optionstring="$optionstring ${module_option_names[$i]}=$value"
+                optionstring+=" -${module_option_flags[$i]} $value"
             fi
         done
 

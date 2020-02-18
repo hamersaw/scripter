@@ -6,4 +6,5 @@ Generalized framework for managing script execution.
 - fix background execution - it is not very clean
     - can we use code from nethammer/wifi/rouge-ap.sh?
 - process: print off logs
-- print in color?
+- print in color
+- scripter-shell?
