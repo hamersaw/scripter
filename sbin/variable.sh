@@ -8,13 +8,13 @@ SUBCOMMANDS:
     list                    display all set variables
     set <name> <value>      set the value for a specified variable
     unset <name>            unset the value for a specified variable"
-listfmt="%-30s%-30s\n"
+listfmt="\e[1;34m%-30s\e[1;32m\e[1;22m%-30s\e[m\n"
 listdivlen=60
 
 # execute command
 case "$1" in
     clear)
-        cat /dev/null > $varfile
+        cat /dev/null >$varfile
         ;;
     get)
         # check argument length
@@ -29,8 +29,11 @@ case "$1" in
     list)
         printf "$listfmt" "name" "value"
         printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
-        cat $varfile | awk -v fmt="$listfmt" \
-            '{printf fmt, $1, $2}'
+
+        while read line; do
+            array=($line)
+            printf "$listfmt" "${array[0]}" "${array[1]}"
+        done <$varfile
         ;;
     set)
         # check argument length
@@ -41,7 +44,7 @@ case "$1" in
             echo "variable '$2' already exists" && exit 1
 
         # add 'variable' and 'value' to varfile
-        echo "$2 $3" >> $varfile
+        echo "$2 $3" >>$varfile
         sort -o $varfile $varfile
         ;;
     unset)

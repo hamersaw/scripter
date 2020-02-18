@@ -8,7 +8,7 @@ SUBCOMMANDS:
     list                    display all registered repositories
     remove <name>           remove the specified repository
     update                  update modules by syncing repositories"
-listfmt="%-15s%-35s\n"
+listfmt="\e[1;34m%-15s\e[1;32m\e[1;22m%-35s\e[m\n"
 listdivlen=60
 
 # execute command
@@ -22,11 +22,11 @@ case "$1" in
             echo "repository '$2' already exists" && exit 1
 
         # add 'name' and 'url' to repofile
-        echo "$2 $3" >> $repofile
+        echo "$2 $3" >>$repofile
         sort -o $repofile $repofile
         ;;
     clear)
-        cat /dev/null > $repofile
+        cat /dev/null >$repofile
         ;;
     help)
         echo "$usage"
@@ -34,8 +34,11 @@ case "$1" in
     list)
         printf "$listfmt" "name" "url"
         printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
-        cat $repofile | awk -v fmt="$listfmt" \
-            '{printf fmt, $1, $2}'
+
+        while read line; do
+            array=($line)
+            printf "$listfmt" "${array[0]}" "${array[1]}"
+        done <$repofile
         ;;
     remove)
         # check argument length
@@ -46,21 +49,21 @@ case "$1" in
         ;;
     update)
         # iterate over repofile
-        while read LINE; do
-            array=($LINE)
+        while read line; do
+            array=($line)
             repodir="$moddir/${array[0]}"
 
             if [ -d "$repodir" ]; then
                 # repo exists -> git pull
                 PWD=$(pwd)
                 cd "$repodir"
-                git pull > /dev/null
+                git pull >/dev/null
                 cd "$PWD"
             else
                 # repo does not exist -> git clone
-                git clone "${array[1]}" "$repodir" > /dev/null
+                git clone "${array[1]}" "$repodir" >/dev/null
             fi
-        done < $repofile
+        done <$repofile
         ;;
     *)
         echo "$usage"

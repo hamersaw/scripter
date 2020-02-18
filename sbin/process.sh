@@ -8,7 +8,7 @@ COMMANDS:
     list                    display all processes
     log <process-id>        view specified process logs
     show <process-id>       show information on the specified process"
-listfmt="%-15s%-30s%-23s%-5s\n"
+listfmt="\e[1;34m%-15s\e[1;32m\e[1;22m%-30s%-23s%-5s\e[m\n"
 listdivlen=75
 
 is_pid_running() {
@@ -22,8 +22,8 @@ is_pid_running() {
 # execute command
 case "$1" in
     clear)
-        cat /dev/null > $procfile
-        rm $logdir/*
+        cat /dev/null >$procfile 
+        rm $logdir/* >/dev/null 2>&1
         ;;
     help)
         echo "$usage"
@@ -40,12 +40,12 @@ case "$1" in
         printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
 
         # iterate over procfile
-        while read LINE; do
-            array=($LINE)
+        while read line; do
+            array=($line)
             running=$(is_pid_running ${array[1]})
             printf "$listfmt" "${array[0]}" \
                 "${array[3]}" "${array[2]}" "$running"
-        done < $procfile
+        done <$procfile
         ;;
     log)
         # check argument length
