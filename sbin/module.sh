@@ -60,7 +60,8 @@ case "$1" in
         printf "$listfmt" "name" "description"
         printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
 
-        for module in $(find $moddir -type f -executable | sort); do
+        for module in $(find $moddir -not -path "$moddir/*/\.git/*" \
+                -type f -executable | sort); do
             # parse module
             parse_module "$module"
             [ $? -ne 0 ] && echo "failed to parse module" && continue
