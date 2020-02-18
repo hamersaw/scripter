@@ -10,19 +10,42 @@ COMMANDS:
 listfmt="%-35s%-50s\n"
 listdivlen=90
 
-get_json() {
-    echo ${1//\'/\"} | python3 -c "import sys, json; \
-        print(json.load(sys.stdin)['$2'])" 2>/dev/null
+parse_module() {
+    # check if file exists
+    [ ! -f $1 ] && return 1
+
+    # read file config
+    local config=""
+    while read line; do
+        case $line in
+            \#*) config+="${line:1}" ;;
+            *) break ;;
+        esac
+    done < <(tail -n +2 $1)
+
+    # set module variables
+    module_name=${1/$moddir/} # TODO - remove leading '/'
+    local description=$(echo $config | jq '.description')
+    module_description=$(echo "$description" | sed 's/\"//g')
+    module_config="$config"
+    return 0
 }
 
-get_json_keys() {
-    echo ${1//\'/\"} | python3 -c "import sys, json; \
-        print(*json.load(sys.stdin).keys())"
-}
+parse_module_config() {
+    module_option_names=()
+    module_option_required=()
 
-get_json_list() {
-    echo ${1//\'/\"} | python3 -c "import sys, json; \
-        print(json.load(sys.stdin)[$2])" 2>/dev/null
+    option_count=$(echo "$1" | jq '.options | length')
+    for (( i=0; i<option_count; i++ )); do
+        local option_config=$(echo "$1" | jq ".options[$i]")
+
+        local name=$(echo $option_config | jq '.name')
+        module_option_names+=( $(echo "$name" | sed 's/\"//g') )
+        local required=$(echo $option_config | jq '.required')
+        module_option_required+=( $(echo "$required" | sed 's/\"//g') )
+    done
+
+    return 0
 }
 
 # execute command
@@ -31,27 +54,16 @@ case "$1" in
         echo "$usage"
         ;;
     list)
-        printf "$modlistfmt" "name" "description"
-        printf "%.0s-" $(seq 1 $modlistdivlen); printf "\n"
+        printf "$listfmt" "name" "description"
+        printf "%.0s-" $(seq 1 $listdivlen); printf "\n"
 
-        for configfile in $(ls $moddir/*/config.js); do
-            # retrieve modules list for this repository
-            json=$(cat $configfile)
-            keys=$(get_json_keys "$json")
-            modules=($keys)
+        for module in $(find $moddir -type f -executable | sort); do
+            # parse module
+            parse_module "$module"
+            [ $? -ne 0 ] && echo "failed to parse module" && continue
 
-            # compute repository name
-            reponame=${configfile/$moddir/} # strip moddir
-            reponame=${reponame/config.js/} # strip 'config.js'
-            reponame="${reponame:1:${#reponame}-2}" # strip /'s
-
-            # iterate over modules
-            for module in ${modules[@]}; do
-                modulejson=$(get_json "$json" "$module")
-                description=$(get_json "$modulejson" "description")
-
-                printf "$modlistfmt" "$reponame/$module" "$description"
-            done
+            # print module
+            printf "$listfmt" "$module_name" "$module_description"
         done
         ;;
     run)
@@ -70,44 +82,29 @@ case "$1" in
         # if unset -> set foreground to false
         [ -z "$foreground" ] && foreground="false"
 
-        # compute reponame and scriptname
-        reponame=$(echo "$2" | cut -f 1 -d "/")
-        scriptname=${2/$reponame/} # strip reponame
-        scriptname="${scriptname:1:${#scriptname}-1}" # strip leading /
+        # parse module
+        parse_module "$moddir/$2"
+        [ $? -ne 0 ] && echo "failed to parse module" && exit 1
 
-        # check if module exists
-        json=$(cat $moddir/$reponame/config.js)
-        modulejson=$(get_json "$json" "$scriptname")
-        [ -z "$modulejson" ] && \
-            echo "module '$2' does not exist" && exit 1
+        # parse options
+        parse_module_config "$module_config"
+        [ $? -ne 0 ] && echo "failed to parse module config" && exit 1
 
-        # populate options 
-        optionS=$(get_json "$modulejson" "options")
-        count=0
-        optionstring=""
-        for (( ; ; )); do
-            # get next option in list
-            option=$(get_json_list "$optionS" "$count")
-            if [ $? -eq 0 ]; then
-                name=$(get_json "$option" "name")
-                required=$(get_json "$option" "required")
+        # populate options
+        for (( i=0; i<${#module_option_names[@]}; i++ )); do
+            # retrieve variable
+            value=$($scriptdir/variable.sh get ${module_option_names[$i]})
+            [ -z $value ] && \
+                [ "${module_option_required[$i]}" = "true" ] && \
+                echo "required variable '${module_option_names[$i]}' is not set" \
+                && exit 1
 
-                # retrieve value from variable store
-                value=$($0 var get $name)
-                [ -z $value ] && [ $required = "true" ] && \
-                    echo "required variable '$name' is not set" && exit 1
-
-                # append to optionstring
-                if [ -z "$optionstring" ]; then
-                    optionstring="$name=$value"
-                else
-                    optionstring="$optionstring $name=$value"
-                fi
+            # append to optionstring
+            if [ -z "$optionstring" ]; then
+                optionstring="${module_option_names[$i]}=$value"
             else
-                break
+                optionstring="$optionstring ${module_option_names[$i]}=$value"
             fi
-
-            (( count += 1 ))
         done
 
         # execute module
@@ -119,8 +116,7 @@ case "$1" in
             false)
                 # execute in background
                 pid="$RANDOM"
-                $modulefile "$optionstring" \
-                    >$logdir/$pid.log 2>&1 &
+                $modulefile "$optionstring" >$logdir/$pid.log 2>&1 &
 
                 echo "$pid $! $(date +%Y.%m.%d-%H:%M:%S) $2 \"$optionstring\"" \
                     >> $procfile
@@ -132,20 +128,13 @@ case "$1" in
         # check argument length
         (( $# != 2 )) && \
             echo "'show' requires one argument" && exit 1
-
-        # compute reponame and scriptname
-        reponame=$(echo "$2" | cut -f 1 -d "/")
-        scriptname=${2/$reponame/} # strip reponame
-        scriptname="${scriptname:1:${#scriptname}-1}" # strip leading /
-
-        # check if module exists
-        json=$(cat $moddir/$reponame/config.js)
-        modulejson=$(get_json "$json" "$scriptname")
-        [ -z "$modulejson" ] \
-            && echo "module '$2' does not exist" && exit 1
+            
+        # parse module
+        parse_module "$moddir/$2"
+        [ $? -ne 0 ] && echo "failed to parse module" && exit 1
 
         # print module
-        echo ${modulejson//\'/\"}
+        echo "$module_config" | jq
         ;;
     *)
         printf "$usage\n"

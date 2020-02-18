@@ -12,7 +12,7 @@ COMMANDS:
     version                             print application version"
 
 # initialize instance variables - set scripterdir if not already set
-scriptdir="$(pwd)/$(dirname $0)/sbin"
+export scriptdir="$(pwd)/$(dirname $0)/sbin"
 
 [ -z "$scripterdir" ] && scripterdir="$HOME/.local/share/scripter"
 export logdir="$scripterdir/log"

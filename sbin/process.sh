@@ -54,7 +54,7 @@ case "$1" in
             array=($LINE)
             running=$(is_pid_running ${array[1]})
 
-            echo "{ \"pid\" : \"${array[0]}\", \"ospid\" : \"${array[1]}\", \"name\" : \"${array[3]}\", \"timestamp\" : \"${array[2]}\", \"running\" : \"$running\", \"options\" : ${array[4]} }"
+            echo "{ \"pid\" : \"${array[0]}\", \"ospid\" : \"${array[1]}\", \"name\" : \"${array[3]}\", \"timestamp\" : \"${array[2]}\", \"running\" : \"$running\", \"options\" : ${array[4]} }" | jq
         fi
         ;;
     *)
