@@ -71,16 +71,14 @@ case "$1" in
         ;;
     run)
         # check argument length
-        (( $# != 2 )) && \
-            echo "'run' requires one argument" && exit 1
+        (( $# != 2 )) && echo "'run' requires one argument" && exit 1
 
         # set foreground to true
         foreground="true"
         ;&
     run-bg)
         # check argument length
-        (( $# != 2 )) && \
-            echo "'run-bg' requires one argument" && exit 1
+        (( $# != 2 )) && echo "'run-bg' requires one argument" && exit 1
 
         # if unset -> set foreground to false
         [ -z "$foreground" ] && foreground="false"
@@ -127,7 +125,7 @@ case "$1" in
                 pid="$RANDOM"
                 $modulefile "$optionstring" >$logdir/$pid.log 2>&1 &
 
-                echo "$pid $! $(date +%Y.%m.%d-%H:%M:%S) $2 \"$optionstring\"" \
+                echo "$pid $! $(date +%Y.%m.%d-%H:%M:%S) $2 $optionstring" \
                     >> $procfile
                 echo "executed process with pid $pid"
                 ;;
@@ -135,8 +133,7 @@ case "$1" in
         ;;
     show)
         # check argument length
-        (( $# != 2 )) && \
-            echo "'show' requires one argument" && exit 1
+        (( $# != 2 )) && echo "'show' requires one argument" && exit 1
             
         # parse module
         parse_module "$moddir/$2"

@@ -15,8 +15,7 @@ listdivlen=60
 case "$1" in
     add)
         # check argument length
-        (( $# != 3 )) && \
-            echo "'add' requires one argument" && exit 1
+        (( $# != 3 )) && echo "'add' requires one argument" && exit 1
 
         # check if 'name' already exists
         cat $repofile | grep -q "^$2 " && \
@@ -40,8 +39,7 @@ case "$1" in
         ;;
     remove)
         # check argument length
-        (( $# != 2 )) && \
-            echo "'remove' requires one argument" && exit 1
+        (( $# != 2 )) && echo "'remove' requires one argument" && exit 1
 
         # remove 'name' from repofile
         sed -i "/^$3/d" $repofile

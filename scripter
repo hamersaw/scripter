@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="0.2.1"
+version="0.2.2"
 usage="usage $(basename $0) <COMMAND> [SUBCOMMAND] [ARGS...]
 COMMANDS:
     help                                display this menu
@@ -10,6 +10,9 @@ COMMANDS:
     (repo | repository) <SUBCOMMAND>    perform repository operations
     (var | variable) <SUBCOMMAND>       perform variable operations
     version                             print application version"
+
+# check if applications are available
+[ ! $(which jq) ] && echo "'jq' not found in users PATH" && exit 1
 
 # initialize instance variables - set scripterdir if not already set
 export scriptdir="$(pwd)/$(dirname $0)/sbin"

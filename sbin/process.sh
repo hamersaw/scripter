@@ -6,6 +6,7 @@ COMMANDS:
     help                    display this menu
     kill <process-id>       terminate the specified process
     list                    display all processes
+    log <process-id>        view specified process logs
     show <process-id>       show information on the specified process"
 listfmt="%-15s%-30s%-23s%-5s\n"
 listdivlen=75
@@ -29,12 +30,10 @@ case "$1" in
         ;;
     kill)
         # check argument length
-        (( $# != 2 )) && \
-            echo "'kill' requires one argument" && exit 1
+        (( $# != 2 )) && echo "'kill' requires one argument" && exit 1
 
         # kill process
-        cat $procfile | grep "^$2 " \
-            | awk '{print $2}' | xargs kill
+        cat $procfile | grep "^$2 " | awk '{print $2}' | xargs kill
         ;;
     list)
         printf "$listfmt" "pid" "name" "timestamp" "running"
@@ -48,13 +47,23 @@ case "$1" in
                 "${array[3]}" "${array[2]}" "$running"
         done < $procfile
         ;;
+    log)
+        # check argument length
+        (( $# != 2 )) && echo "'log' requires one argument" && exit 1
+
+        # print log directory
+        [ -f $logdir/$2.log ] && cat $logdir/$2.log
+        ;;
     show)
-        LINE=$(cat $procfile | grep "^$2 ")
-        if [ ! -z "$LINE" ]; then
-            array=($LINE)
+        # check argument length
+        (( $# != 2 )) && echo "'show' requires one argument" && exit 1
+
+        line=$(cat $procfile | grep "^$2 ")
+        if [ ! -z "$line" ]; then
+            array=($line)
             running=$(is_pid_running ${array[1]})
 
-            echo "{ \"pid\" : \"${array[0]}\", \"ospid\" : \"${array[1]}\", \"name\" : \"${array[3]}\", \"timestamp\" : \"${array[2]}\", \"running\" : \"$running\", \"options\" : ${array[4]} }" | jq
+            echo "{ \"pid\" : \"${array[0]}\", \"ospid\" : \"${array[1]}\", \"name\" : \"${array[3]}\", \"timestamp\" : \"${array[2]}\", \"running\" : \"$running\", \"options\" : \"${array[@]:4}\" }" | jq
         fi
         ;;
     *)

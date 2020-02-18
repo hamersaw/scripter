@@ -18,8 +18,7 @@ case "$1" in
         ;;
     get)
         # check argument length
-        (( $# != 2 )) && \
-            echo "'getcommand requires one argument" && exit 1
+        (( $# != 2 )) && echo "'get' requires one argument" && exit 1
 
         # retrieve variable value if exists
         cat $varfile | grep "^$2 " | awk '{print $2}'
@@ -35,8 +34,7 @@ case "$1" in
         ;;
     set)
         # check argument length
-        (( $# != 3 )) && \
-            echo "'set' requires two arguments" && exit 1
+        (( $# != 3 )) && echo "'set' requires two arguments" && exit 1
 
         # check if 'variable' already exists
         cat $varfile | grep -q "^$2 " && \
@@ -48,8 +46,7 @@ case "$1" in
         ;;
     unset)
         # check argument length
-        (( $# != 2 )) && \
-            echo "'unset' requires one argument" && exit 1
+        (( $# != 2 )) && echo "'unset' requires one argument" && exit 1
 
         # remove 'variable' from varfile
         sed -i "/^$2/d" $varfile
