@@ -65,8 +65,8 @@ case "$1" in
                 cd "$repodir"
 
                 git pull >/dev/null 2>&1
-                if [ $? -eq 1 ]; then
-                    printf "$(warn "[+] updated '${array[0]}'\n")"
+                if [ $? -eq 0 ]; then
+                    printf "$(success "[+] updated '${array[0]}'\n")"
                 else
                     printf "$(warn "[0] failed to update '${array[0]}'\n")"
                 fi
@@ -75,8 +75,8 @@ case "$1" in
             else
                 # repo does not exist -> git clone
                 git clone "${array[1]}" "$repodir" >/dev/null 2>&1
-                if [ $? -eq 1 ]; then
-                    printf "$(warn "[+] initialized '${array[0]}'\n")"
+                if [ $? -eq 0 ]; then
+                    printf "$(success "[+] initialized '${array[0]}'\n")"
                 else
                     printf "$(warn "[0] failed to initialize '${array[0]}'\n")"
                 fi
