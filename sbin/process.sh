@@ -8,7 +8,7 @@ COMMANDS:
     list                    display all processes
     log <process-id>        view specified process logs
     show <process-id>       show information on the specified process"
-listfmt="\e[1;34m%-15s\e[1;32m\e[1;22m%-30s%-23s%-5s\e[m\n"
+listfmt="\e[1;34m%-15s\e[1;32m\e[1;22m%-30s\e[1;35m%-23s\e[1;36m%-5s\e[m\n"
 listdivlen=75
 
 is_pid_running() {
@@ -24,16 +24,26 @@ case "$1" in
     clear)
         cat /dev/null >$procfile 
         rm $logdir/* >/dev/null 2>&1
+
+        printf "$(success "[-] cleared process cache\n")"
         ;;
     help)
         echo "$usage"
         ;;
     kill)
         # check argument length
-        (( $# != 2 )) && echo "'kill' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'kill' requires one argument\n")" && exit 1
 
         # kill process
-        cat $procfile | grep "^$2 " | awk '{print $2}' | xargs kill
+        cat $procfile | grep "^$2 " | awk '{print $2}' \
+            | xargs kill >/dev/null 2>&1
+
+        if [ $? -eq 0 ]; then
+            printf "$(success "[-] process '$2' terminated\n")"
+        else
+            printf "$(warn "[0] unable to terminate process '$2'\n")"
+        fi
         ;;
     list)
         printf "$listfmt" "pid" "name" "timestamp" "running"
@@ -49,14 +59,20 @@ case "$1" in
         ;;
     log)
         # check argument length
-        (( $# != 2 )) && echo "'log' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'log' requires one argument\n")" && exit 1
 
         # print log directory
-        [ -f $logdir/$2.log ] && cat $logdir/$2.log
+        if [ -f $logdir/$2.log ]; then
+            cat $logdir/$2.log
+        else
+            printf "$(warn "log file for pid '$2' not found\n")"
+        fi
         ;;
     show)
         # check argument length
-        (( $# != 2 )) && echo "'show' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'show' requires one argument\n")" && exit 1
 
         line=$(cat $procfile | grep "^$2 ")
         if [ ! -z "$line" ]; then

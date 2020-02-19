@@ -64,7 +64,8 @@ case "$1" in
                 -type f -executable | sort); do
             # parse module
             parse_module "$module"
-            [ $? -ne 0 ] && echo "failed to parse module" && continue
+            [ $? -ne 0 ] && printf \
+                "$(warn "failed to parse module\n")" && continue
 
             # print module
             printf "$listfmt" "$module_name" "$module_description"
@@ -72,25 +73,28 @@ case "$1" in
         ;;
     run)
         # check argument length
-        (( $# != 2 )) && echo "'run' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'run' requires one argument\n")" && exit 1
 
         # set foreground to true
         foreground="true"
         ;&
     run-bg)
         # check argument length
-        (( $# != 2 )) && echo "'run-bg' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'run-bg' requires one argument\n")" && exit 1
 
         # if unset -> set foreground to false
         [ -z "$foreground" ] && foreground="false"
 
         # parse module
         parse_module "$moddir/$2"
-        [ $? -ne 0 ] && echo "failed to parse module" && exit 1
+        [ $? -ne 0 ] && printf "$(fail "failed to parse module\n")" && exit 1
 
         # parse options
         parse_module_config "$module_config"
-        [ $? -ne 0 ] && echo "failed to parse module config" && exit 1
+        [ $? -ne 0 ] && printf \
+            "$(fail "failed to parse module config\n")" && exit 1
 
         # populate options
         for (( i=0; i<${#module_option_names[@]}; i++ )); do
@@ -100,7 +104,7 @@ case "$1" in
             # check if variable is set and required
             if [ -z "$value" ]; then
                 if [ "${module_option_required[$i]}" = "true" ]; then
-                    echo "required variable '${module_option_names[$i]}' is not set"
+                    printf "$(fail "required variable '${module_option_names[$i]}' is not set\n")"
                     exit 1
                 else
                     continue;
@@ -128,17 +132,18 @@ case "$1" in
 
                 echo "$pid $! $(date +%Y.%m.%d-%H:%M:%S) $2 $optionstring" \
                     >> $procfile
-                echo "executed process with pid $pid"
+                printf "$(success "[+] executed process with pid $pid\n")"
                 ;;
         esac
         ;;
     show)
         # check argument length
-        (( $# != 2 )) && echo "'show' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'show' requires one argument\n")" && exit 1
             
         # parse module
         parse_module "$moddir/$2"
-        [ $? -ne 0 ] && echo "failed to parse module" && exit 1
+        [ $? -ne 0 ] && printf "$(fail "failed to parse module\n")" && exit 1
 
         # print module
         echo "$module_config" | jq

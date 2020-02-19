@@ -1,7 +1,7 @@
 #!/bin/bash
 
-usage="usage $(basename $0) var <SUBCOMMAND>
-SUBCOMMANDS:
+usage="usage $(basename $0) var <COMMAND>
+COMMANDS:
     clear                   unset all variables
     get <name>              retrieve the value for a specified variable
     help                    display this menu
@@ -18,7 +18,8 @@ case "$1" in
         ;;
     get)
         # check argument length
-        (( $# != 2 )) && echo "'get' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'get' requires one argument\n")" && exit 1
 
         # retrieve variable value if exists
         cat $varfile | grep "^$2 " | awk '{print $2}'
@@ -37,22 +38,28 @@ case "$1" in
         ;;
     set)
         # check argument length
-        (( $# != 3 )) && echo "'set' requires two arguments" && exit 1
+        (( $# != 3 )) && printf \
+            "$(fail "'set' requires two arguments\n")" && exit 1
 
         # check if 'variable' already exists
-        cat $varfile | grep -q "^$2 " && \
-            echo "variable '$2' already exists" && exit 1
+        cat $varfile | grep -q "^$2 " && printf \
+            "$(fail "variable '$2' already exists\n")" && exit 1
 
         # add 'variable' and 'value' to varfile
         echo "$2 $3" >>$varfile
         sort -o $varfile $varfile
+
+        printf "$(success "[+] set variable '$2' to '$3'\n")"
         ;;
     unset)
         # check argument length
-        (( $# != 2 )) && echo "'unset' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'unset' requires one argument\n")" && exit 1
 
         # remove 'variable' from varfile
         sed -i "/^$2/d" $varfile
+
+        printf "$(success "[-] unset variable '$2'\n")"
         ;;
     *)
         echo "$usage"

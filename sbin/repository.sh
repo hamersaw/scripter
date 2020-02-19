@@ -1,7 +1,7 @@
 #!/bin/bash
 
-usage="usage $(basename $0) repo <SUBCOMMAND>
-SUBCOMMANDS:
+usage="usage $(basename $0) repo <COMMAND>
+COMMANDS:
     add <name> <git-url>    add the specified repository with git url
     clear                   clear the list of registered repositories
     help                    display this menu
@@ -15,15 +15,18 @@ listdivlen=60
 case "$1" in
     add)
         # check argument length
-        (( $# != 3 )) && echo "'add' requires one argument" && exit 1
+        (( $# != 3 )) && printf \
+            "$(fail "'add' requires two arguments\n")" && exit 1
 
         # check if 'name' already exists
-        cat $repofile | grep -q "^$2 " && \
-            echo "repository '$2' already exists" && exit 1
+        cat $repofile | grep -q "^$2 " && printf \
+            "$(warn "repository '$2' already exists")" && exit 1
 
         # add 'name' and 'url' to repofile
         echo "$2 $3" >>$repofile
         sort -o $repofile $repofile
+
+        printf "$(success "[+] added repository '$2' : '$3'\n")"
         ;;
     clear)
         cat /dev/null >$repofile
@@ -42,10 +45,13 @@ case "$1" in
         ;;
     remove)
         # check argument length
-        (( $# != 2 )) && echo "'remove' requires one argument" && exit 1
+        (( $# != 2 )) && printf \
+            "$(fail "'remote' requires one argument\n")" && exit 1
 
         # remove 'name' from repofile
         sed -i "/^$3/d" $repofile
+
+        printf "$(success "[-] removed repository '$2'\n")"
         ;;
     update)
         # iterate over repofile
@@ -57,11 +63,23 @@ case "$1" in
                 # repo exists -> git pull
                 PWD=$(pwd)
                 cd "$repodir"
-                git pull >/dev/null
+
+                git pull >/dev/null 2>&1
+                if [ $? -eq 1 ]; then
+                    printf "$(warn "[+] updated '${array[0]}'\n")"
+                else
+                    printf "$(warn "[0] failed to update '${array[0]}'\n")"
+                fi
+
                 cd "$PWD"
             else
                 # repo does not exist -> git clone
-                git clone "${array[1]}" "$repodir" >/dev/null
+                git clone "${array[1]}" "$repodir" >/dev/null 2>&1
+                if [ $? -eq 1 ]; then
+                    printf "$(warn "[+] initialized '${array[0]}'\n")"
+                else
+                    printf "$(warn "[0] failed to initialize '${array[0]}'\n")"
+                fi
             fi
         done <$repofile
         ;;
