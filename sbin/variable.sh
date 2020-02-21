@@ -43,7 +43,7 @@ case "$1" in
 
         # check if 'variable' already exists
         cat $varfile | grep -q "^$2 " && printf \
-            "$(fail "variable '$2' already exists\n")" && exit 1
+            "$(warn "[0] variable '$2' already exists\n")" && exit 1
 
         # add 'variable' and 'value' to varfile
         echo "$2 $3" >>$varfile

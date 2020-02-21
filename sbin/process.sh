@@ -66,7 +66,7 @@ case "$1" in
         if [ -f $logdir/$2.log ]; then
             cat $logdir/$2.log
         else
-            printf "$(warn "log file for pid '$2' not found\n")"
+            printf "$(warn "[0] log file for pid '$2' not found\n")"
         fi
         ;;
     show)

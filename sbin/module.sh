@@ -24,7 +24,8 @@ parse_module() {
     done < <(tail -n +2 $1)
 
     # set module variables
-    module_name=${1/$moddir/} # TODO - remove leading '/'
+    local name=${1/$moddir/} # strip 'moddir' from path
+    module_name=${name#\/} # remove leading '/' if exists
     local description=$(echo $config | jq '.description')
     module_description=$(echo "$description" | sed 's/\"//g')
     module_config="$config"
@@ -65,7 +66,7 @@ case "$1" in
             # parse module
             parse_module "$module"
             [ $? -ne 0 ] && printf \
-                "$(warn "failed to parse module\n")" && continue
+                "$(warn "[0] failed to parse module\n")" && continue
 
             # print module
             printf "$listfmt" "$module_name" "$module_description"
@@ -89,12 +90,12 @@ case "$1" in
 
         # parse module
         parse_module "$moddir/$2"
-        [ $? -ne 0 ] && printf "$(fail "failed to parse module\n")" && exit 1
+        [ $? -ne 0 ] && printf "$(fail "[0] failed to parse module\n")" && exit 1
 
         # parse options
         parse_module_config "$module_config"
         [ $? -ne 0 ] && printf \
-            "$(fail "failed to parse module config\n")" && exit 1
+            "$(fail "[0] failed to parse module config\n")" && exit 1
 
         # populate options
         for (( i=0; i<${#module_option_names[@]}; i++ )); do
@@ -104,7 +105,7 @@ case "$1" in
             # check if variable is set and required
             if [ -z "$value" ]; then
                 if [ "${module_option_required[$i]}" = "true" ]; then
-                    printf "$(fail "required variable '${module_option_names[$i]}' is not set\n")"
+                    printf "$(fail "[0] required variable '${module_option_names[$i]}' is not set\n")"
                     exit 1
                 else
                     continue;
@@ -143,7 +144,7 @@ case "$1" in
             
         # parse module
         parse_module "$moddir/$2"
-        [ $? -ne 0 ] && printf "$(fail "failed to parse module\n")" && exit 1
+        [ $? -ne 0 ] && printf "$(fail "[0] failed to parse module\n")" && exit 1
 
         # print module
         echo "$module_config" | jq
