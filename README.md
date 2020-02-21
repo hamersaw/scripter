@@ -21,18 +21,23 @@ Generalized framework for managing script execution.
 
     # update repository
     scripter repo update
-#### EXECUTE MODULE
+#### EXECUTE MODULES
     # view available modules
     scripter mod list
 
     # show module information
     scripter mod show nethammer/wifi/rouge-ap.sh
 
-    # run module
+    # set 'required' module variables
     scripter var set wifi.interface wlp82s0
     scripter var set wifi.ssid scripter-ap
+
+    # run module
+    scripter mod run nethammer/wifi/rouge-ap.sh
+
+    # run module in background
     scripter mod run-bg nethammer/wifi/rouge-ap.sh
-#### PROCESSES MANAGEMENT
+#### PROCESS MANAGEMENT
     # view running processes
     scripter proc list
 
@@ -43,7 +48,8 @@ Generalized framework for managing script execution.
     scripter proc kill 12289
 
 ## COMMON ISSUES
-1. Program not working when running with 'sudo'.
+1. scripter not working when running with 'sudo'.
+
     # preserve $HOME directory with sudo command
     sudo --preserve-env=HOME scripter ...
 
