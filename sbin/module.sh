@@ -7,8 +7,8 @@ COMMANDS:
     run <module-name>       run the specified module
     run-bg <module-name>    run the specified module in the background
     show <module-name>      show information on the specified module"
-listfmt="\e[1;34m%-35s\e[1;32m\e[1;22m%-50s\e[m\n"
-listdivlen=90
+listfmt="\e[1;34m%-40s\e[1;32m\e[1;22m%-50s\e[m\n"
+listdivlen=95
 
 parse_module() {
     # check if file exists
